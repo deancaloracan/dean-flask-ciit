@@ -70,6 +70,31 @@ def add_item():
     
     return redirect(url_for('home'))
 
+@app.route('/edit/<int:item_id>')
+def edit_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    return render_template('edit.html', item=item)
+
+@app.route('/update/<int:item_id>', methods=['POST'])
+def update_item(item_id):
+    item = Item.query.get_or_404(item_id)
+    
+    item.name = request.form.get('name', item.name)
+    item.asin = request.form.get('asin', item.asin)
+    item.category = request.form.get('category', item.category)
+    item.fba_available_stock = request.form.get('fba_available_stock', type=int, default=item.fba_available_stock)
+    item.total_sales_last_30_days = request.form.get('total_sales_last_30_days', type=int, default=item.total_sales_last_30_days)
+    item.period_days = request.form.get('period_days', type=int, default=item.period_days)
+    item.seasonality_factor = request.form.get('seasonality_factor', type=float, default=item.seasonality_factor)
+    
+    # Recalculate derived fields
+    item.adj_velocity = item.calculate_adjusted_velocity()
+    item.fba_days_remaining = item.calculate_fba_days_remaining()
+    item.forecast = item.calculate_forecast()
+    
+    db.session.commit()
+    return redirect(url_for('home'))
+
 @app.route('/remove/<int:item_id>')
 def remove_product(item_id):
     item = Item.query.get_or_404(item_id)
