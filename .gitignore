@@ -1,0 +1,4 @@
+flask-tutorial-env/
+instance/
+*.pyc
+__pycache__/
